@@ -251,8 +251,5 @@ global_hooks:
       output: "crm_vol6_{name}_crm.tif"
 
   # -------------------------------------------------------------------------
-  # CLEANUP
+  # CLEANUP/METADATA/ETC.
   # -------------------------------------------------------------------------
-  # - name: raster_slope
-  #   args: 
-  #    max_val: 60 # Remove crazy spikes
