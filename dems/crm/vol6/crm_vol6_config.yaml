@@ -1,4 +1,4 @@
-# socal_template.yaml
+# crm_vol6_config.yaml
 project:
   name: "CRM_Vol6_Tile_{name}"
   description: "1-arc-second CRM for Tile {name}"
