@@ -1,6 +1,6 @@
 # socal_template.yaml
 project:
-  name: "SoCal_CRM_Tile_{name}"
+  name: "CRM_Vol6_Tile_{name}"
   description: "1-arc-second CRM for Tile {name}"
 
 # The region will be injected build script.
@@ -211,7 +211,7 @@ global_hooks:
   - name: provenance
     args:
       res: "1s"
-      output: "{name}_provenance.tif"
+      output: "crm_vol6_{name}_provenance.tif"
 
   # -------------------------------------------------------------------------
   # STACKING
@@ -221,7 +221,7 @@ global_hooks:
       res: "1s"  # 1 arc-second (~30m)
       mode: "mixed"
       crs: "EPSG:4326"
-      output: "socal_{name}_stack.tif"
+      output: "crm_vol6_{name}_stack.tif"
 
   # -------------------------------------------------------------------------
   # FOCUS - Reduce the entries to the multi-stack
@@ -235,7 +235,7 @@ global_hooks:
   # -------------------------------------------------------------------------
   - name: osm_landmask
     args:
-      filename: "socal_{name}_landmask.geojson"
+      filename: "crm_vol6_{name}_landmask.geojson"
 
   # -------------------------------------------------------------------------
   # CUDEM INTERPOLATION
@@ -247,8 +247,8 @@ global_hooks:
       resolutions: "1s/3s/9s" 
       weights: "1.0/0.5/0.05"
       algo: "interp_gmt"
-      barrier: "socal_{name}_landmask.geojson"
-      output: "socal_{name}_crm.tif"
+      barrier: "crm_vol6_{name}_landmask.geojson"
+      output: "crm_vol6_{name}_crm.tif"
 
   # -------------------------------------------------------------------------
   # CLEANUP
