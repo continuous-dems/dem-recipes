@@ -1,0 +1,258 @@
+# socal_template.yaml
+project:
+  name: "SoCal_CRM_Tile_{name}"
+  description: "1-arc-second CRM for Tile {name}"
+
+# The region will be injected build script.
+region: [{w}, {e}, {s}, {n}]
+
+modules:
+  # Copernicus for land background
+  - module: copernicus
+    args: 
+      weight: 1.25
+    hooks:
+      - name: unzip
+      - name: filename_filter
+        args: 
+          match: ".tif"
+      - name: stream_data
+        args: 
+          chunk_size: 100000
+      - name: range_z  # Only topo (copernicus bleeds 0 into bathymetry)
+        args: 
+          min_z: 0.01
+
+  # GEBCO for background
+  - module: gebco_cog
+    args: 
+      weight: .25
+    hooks:
+      #- *standard_ingest
+      - name: stream_data
+        args: 
+          chunk_size: 100000
+      - name: range_z  # Only Bathy
+        args: 
+          max_z: -0.1
+
+  # NOAA Multibeam
+  - module: multibeam
+    args: 
+      weight: .75
+    hooks:
+      - name: filename_filter
+        args: 
+          exclude: ".inf"
+          stage: "pre"
+      - name: stream_data
+        args: 
+          chunk_size: 100000
+      - name: rq
+        args:
+          reference: "gmrt"
+          threshold: 10
+          mode: "percent"
+          builder: "grid"
+          res: 0.008333
+      - name: outlierz
+
+  # NOS BAGs
+  - module: nos_hydro
+    args: 
+      datatype: "bag"
+      weight: 1
+    hooks:
+      - name: filename_filter
+        args: 
+          exclude: "_Ellipsoid_"
+          stage: "pre"
+      - name: stream_data
+        args: 
+          chunk_size: 100000
+      - name: stream_reproject
+        args: 
+          dst_srs: "EPSG:4326+3855"
+      - name: spatial_crop
+
+  # NOS Hydro surveys
+  - module: nos_hydro
+    args: 
+      datatype: "xyz"
+      weight: .35
+    hooks:
+      - name: unzip
+      - name: set_datatype
+        args: 
+          data_type: "nos_xyz"
+      - name: stream_data
+        args: 
+          chunk_size: 100000
+      - name: stream_reproject
+        args: 
+          src_srs: "EPSG:4326+5866"
+          dst_srs: "EPSG:4326+3855"
+      - name: spatial_crop
+
+  # NOAA Electronic Nautical Charts
+  - module: charts
+    args: 
+      weight: .15
+    hooks:
+      - name: unzip
+      - name: filename_filter
+        args: 
+          match: ".000"
+          stage: "file"
+      - name: set_datatype
+        args: 
+          data_type: "charts_000"
+      - name: stream_data
+        args: 
+          chunk_size: 100000
+      - name: stream_reproject
+        args: 
+          src_srs: "EPSG:4326+5866"
+          dst_srs: "EPSG:4326+3855"
+      - name: spatial_crop
+
+  # USACE E-Hydro dredging, etc.
+  - module: ehydro
+    args: 
+      weight: .85
+    hooks:
+      - name: unzip
+      - name: filename_filter
+        args: 
+          match: ".gdb"
+          stage: "file"
+      - name: stream_data
+        args: 
+          chunk_size: 100000
+      - name: stream_reproject
+        args: 
+          dst_srs: "EPSG:4326+3855"
+      - name: spatial_crop
+
+  # USGS National Map (Topo/NED)
+  - module: tnm
+    args:
+      formats: "GeoTIFF"
+      datasets: "3/4" # 3 and 4 are NED 1/3 and NED 1/9
+      hooks:
+        - name: stream_data
+          args: 
+            chunk_size: 100000
+        - name: stream_reproject
+          args: 
+            dst_srs: "EPSG:4326+3855"
+        - name: spatial_crop
+        - name: range_z
+          args: 
+            min_z: 0.01
+        #- name: remove_flats
+
+  # NOAA Digital Coast (Lidar/Bathy/CoNED/CUDEM)
+  - module: coned
+    args:
+      hooks:
+        - name: stream_data
+          args: 
+            chunk_size: 100000
+        - name: stream_reproject
+          args: 
+            dst_srs: "EPSG:4326+3855"
+        - name: spatial_crop
+
+  # Crowd-Sourced Bathymetry (Fills the gaps)
+  - module: csb
+    args:
+      min_year: "2024"
+      max_year: "2025"
+      hooks:
+        - name: stream_data
+          args: 
+            chunk_size: 100000
+        - name: stream_reproject
+          args: 
+            src_srs: "EPSG:4326+5866"
+            dst_srs: "EPSG:4326+3855"
+        - name: spatial_crop
+
+
+global_hooks:
+  # -------------------------------------------------------------------------
+  # SETUP AUDIT AND MAKE SURE TO DROP NOISE FROM FILTERS
+  # -------------------------------------------------------------------------
+  - name: audit
+  - name: drop_class
+
+  # -------------------------------------------------------------------------
+  # WEIGHTS
+  # -------------------------------------------------------------------------
+  - name: set_weight
+    args:
+      default: 1.0
+      rules:
+        # Module Names
+        nos_hydro: 1.0
+        ehydro: 3.0
+        charts: .1
+        multibeam: .75
+        copernicus: .95
+        coned: 5.0
+        tnm: 1.2
+        csb: 0.15
+        gebco_cog: 0.01
+
+        # Specific file types (optional overrides)
+        bag: 15.0
+
+  - name: provenance
+    args:
+      res: "1s"
+      output: "{name}_provenance.tif"
+
+  # -------------------------------------------------------------------------
+  # STACKING
+  # -------------------------------------------------------------------------
+  - name: multi_stack
+    args:
+      res: "1s"  # 1 arc-second (~30m)
+      mode: "mixed"
+      crs: "EPSG:4326"
+      output: "socal_{name}_stack.tif"
+
+  # -------------------------------------------------------------------------
+  # FOCUS - Reduce the entries to the multi-stack
+  # -------------------------------------------------------------------------
+  - name: focus_sink
+    args:
+      target: "multi_stack"
+
+  # -------------------------------------------------------------------------
+  # GENERATE LANDMASK 
+  # -------------------------------------------------------------------------
+  - name: osm_landmask
+    args:
+      filename: "socal_{name}_landmask.geojson"
+
+  # -------------------------------------------------------------------------
+  # CUDEM INTERPOLATION
+  # -------------------------------------------------------------------------
+  - name: cudem_stepdown
+    args:
+      steps: 2
+      # CRM is 1s. We step down to 3s and 9s to fill holes.
+      resolutions: "1s/3s/9s" 
+      weights: "1.0/0.5/0.05"
+      algo: "interp_gmt"
+      barrier: "socal_{name}_landmask.geojson"
+      output: "socal_{name}_crm.tif"
+
+  # -------------------------------------------------------------------------
+  # CLEANUP
+  # -------------------------------------------------------------------------
+  # - name: raster_slope
+  #   args: 
+  #    max_val: 60 # Remove crazy spikes
