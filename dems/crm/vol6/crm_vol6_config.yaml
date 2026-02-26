@@ -150,7 +150,7 @@ modules:
         - name: range_z
           args: 
             min_z: 0.01
-        #- name: remove_flats
+        - name: raster_flats
 
   # NOAA Digital Coast (Lidar/Bathy/CoNED/CUDEM)
   - module: coned
@@ -178,7 +178,7 @@ modules:
             src_srs: "EPSG:4326+5866"
             dst_srs: "EPSG:4326+3855"
         - name: spatial_crop
-
+        - name: outlierz
 
 global_hooks:
   # -------------------------------------------------------------------------
@@ -230,6 +230,14 @@ global_hooks:
     args:
       target: "multi_stack"
 
+  - name: ms_blend
+    args:
+      weight_threshold: 1
+
+  - name: ms_blend
+    args:
+      weight_threshold: .5
+
   # -------------------------------------------------------------------------
   # GENERATE LANDMASK 
   # -------------------------------------------------------------------------
@@ -240,7 +248,7 @@ global_hooks:
   # -------------------------------------------------------------------------
   # CUDEM INTERPOLATION
   # -------------------------------------------------------------------------
-  - name: cudem_stepdown
+  - name: ms_cudem
     args:
       steps: 2
       # CRM is 1s. We step down to 3s and 9s to fill holes.
