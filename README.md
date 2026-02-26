@@ -37,7 +37,9 @@ region: [-120.0, -119.0, 33.0, 34.0] # The bounding box: [West, East, South, Nor
 ```
 
 * **2. Modules (The Data Sources)**
-The `modules` block lists the remote data sources `fetchez` will query and download. Modules are evaluated in order.
+The `modules` block lists the data sources `fetchez` will query and ingest. Modules are evaluated in order.
+
+Crucially, you are not limited to remote APIs! You can seamlessly inject your own local or proprietary data into the pipeline using the `local_fs` module.
 
 ```yaml
 modules:
@@ -47,6 +49,14 @@ modules:
       where: "date >= 2000" # Arguments specific to the NOS module
     hooks:
       # These hooks ONLY apply to NOS Hydro data
+      - name: stream_data
+
+  - module: local_fs
+    args:
+      # The Trebuchet engine smartly resolves paths relative to this YAML file!
+      path: "../local_surveys/new_dredge_project.xyz"
+      data_type: "xyz"
+    hooks:
       - name: stream_data
 
   - module: tnm
