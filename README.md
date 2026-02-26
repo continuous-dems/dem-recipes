@@ -22,7 +22,7 @@ Pipeline("recipes/socal_template.yaml").run()
 # 📖 Anatomy of a Recipe
 A `fetchez` YAML configuration is broken down into specific operational blocks. Here is the generalized structure:
 
-* ***1. Project & Execution Metadata***
+* **1. Project & Execution Metadata**
 Defines what you are building and how much compute power to use.
 
 ```yaml
@@ -36,7 +36,7 @@ execution:
 region: [-120.0, -119.0, 33.0, 34.0] # The bounding box: [West, East, South, North]
 ```
 
-* ***2. Modules (The Data Sources)***
+* **2. Modules (The Data Sources)**
 The `modules` block lists the remote data sources `fetchez` will query and download. Modules are evaluated in order.
 
 ```yaml
@@ -55,7 +55,7 @@ modules:
     # Notice this module has no specific hooks; it will just download the files.
 ```
 
-* ***3. Global Hooks (The Assembly Line)***
+* **3. Global Hooks (The Assembly Line)**
 The `global_hooks` block defines the processing pipeline. While module hooks only touch specific data, **Global Hooks process the combined pool of data from all modules.**
 
 ```yaml
@@ -75,25 +75,25 @@ global_hooks:
 # 🪝 Understanding Hooks and the Lifecycle
 Hooks are the specialized tools that process data. It is critical to understand when they run. `fetchez` processes hooks in three distinct stages:
 
-* ***1. PRE Stage:*** Runs before downloads begin.
+* **1. PRE Stage:** Runs before downloads begin.
 
 *Use case*: Filtering the list of URLs, assigning stack weights (set_weight), or generating boundary masks (osm_landmask) before processing starts.
 
-* ***2. FILE Stage:*** Runs during the download loop on each individual file.
+* **2. FILE Stage:** Runs during the download loop on each individual file.
 
 *Use case*: Unzipping archives, converting formats, or streaming point clouds directly into a grid accumulator (multi_stack).
 
-* ***3. POST Stage:*** Runs after all files have been downloaded and streamed.
+* **3. POST Stage:** Runs after all files have been downloaded and streamed.
 
 *Use case*: Spatial interpolation (sm_cudem), blending seams (sm_blend), and final output cropping.
 
 **Global vs. Module Hooks**
-* ***Module Hooks (modules.hooks):*** Only execute on the files fetched by that specific module.
+* **Module Hooks (modules.hooks):** Only execute on the files fetched by that specific module.
 
-* ***Global Hooks (global_hooks):*** Execute on the entire, aggregated dataset from all modules simultaneously.
+* **Global Hooks (global_hooks):** Execute on the entire, aggregated dataset from all modules simultaneously.
 
 # 💡 Pro-Tips for Recipe Writers
-* ***1. Keep it DRY with YAML Anchors***
+* **1. Keep it DRY with YAML Anchors**
 If multiple modules require the exact same set of hooks (e.g., streaming and cropping), do not copy and paste. Define an anchor (&) and alias it (*):
 
 ```yaml
@@ -110,10 +110,10 @@ modules:
     hooks: *standard_stream
 ```
 
-* ***2. Path Resolution is Automatic***
+* **2. Path Resolution is Automatic**
 When you define a file output in a hook (e.g., output: "stack.tif"), `fetchez` automatically saves it relative to where the YAML file is located. You do not need to hardcode absolute paths!
 
-* ***3. Inspect Available Tools***
+* **3. Inspect Available Tools**
 Not sure what a hook does or what arguments it takes? Ask the CLI:
 
 * List all hooks: `fetchez --list-hooks`
