@@ -43,6 +43,7 @@ Crucially, you are not limited to remote APIs! You can seamlessly inject your ow
 
 ```yaml
 modules:
+  # Remote module with arguments
   - module: nos_hydro
     args:
       datatype: "xyz" # Only get the legacy NOS Hydro surveys
@@ -51,6 +52,7 @@ modules:
       # These hooks ONLY apply to NOS Hydro data
       - name: stream_data
 
+  # Single Files
   - module: local_fs
     args:
       path: "../local_surveys/new_dredge_project.xyz"
@@ -58,15 +60,17 @@ modules:
     hooks:
       - name: stream_data
 
+  # Directory scan
   - module: local_fs
     args:
-      path: "../local_surveys/my_cleaned_multibeam"
+      path: "../local_surveys/my_cleaned_multibeam/"
       ext: ".xyz"
       data_type: "multibeam"
       gen_inf: True
     hooks:
       - name: stream_data
 
+  # Simple remote module
   - module: tnm
     args:
       formats: "GeoTIFF"
