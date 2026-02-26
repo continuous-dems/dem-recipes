@@ -58,6 +58,13 @@ modules:
     hooks:
       - name: stream_data
 
+  - module: local_fs
+    args:
+      path: "../local_surveys/my_cleaned_multibeam"
+      data_type: "xyz"
+    hooks:
+      - name: stream_data
+
   - module: tnm
     args:
       formats: "GeoTIFF"
