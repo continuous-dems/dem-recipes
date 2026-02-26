@@ -53,7 +53,6 @@ modules:
 
   - module: local_fs
     args:
-      # The Trebuchet engine smartly resolves paths relative to this YAML file!
       path: "../local_surveys/new_dredge_project.xyz"
       data_type: "xyz"
     hooks:
