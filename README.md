@@ -61,7 +61,9 @@ modules:
   - module: local_fs
     args:
       path: "../local_surveys/my_cleaned_multibeam"
-      data_type: "xyz"
+      ext: ".xyz"
+      data_type: "multibeam"
+      gen_inf: True
     hooks:
       - name: stream_data
 
