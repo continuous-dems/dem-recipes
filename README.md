@@ -1,7 +1,7 @@
 # 🗺️ DEM Recipes (The Globato/Fetchez Cookbook)
 Welcome to the **DEM Recipes** repository. This is the central archive for our Continuous-DEM project configurations.
 
-Instead of storing massive, static DEM files, we store the **recipes** used to create them. By treating our Digital Elevation Models as "Infrastructure as Code," we ensure that any team member can perfectly reproduce, update, or audit a DEM surface from scratch using the `fetchez` and `globato` engines.
+Instead of storing massive, static DEM files, we store the **recipes** used to create them. By treating our Digital Elevation Models as "Infrastructure as Code," we ensure that any team or community member can reproduce, update, or audit a DEM surface from scratch using the `fetchez` and `globato` engines.
 
 # 🚀 How to Launch a Recipe
 Recipes are written in standard YAML. To execute a recipe and build the DEM, simply pass the YAML file to the `fetchez` CLI:
