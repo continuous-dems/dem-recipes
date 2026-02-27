@@ -7,8 +7,10 @@ import yaml
 import logging
 import subprocess
 from fetchez.spatial import Region
-
-import json
+try:
+    from fetchez.pipeline import Pipeline
+except ModuleNotFoundError:
+    Pipeline = None
 
 # Configuration
 GEOJSON_PATH = "crm_vol6_south.geojson"
@@ -56,10 +58,18 @@ def build_tile(feature, template_str):
             f.write(config_str)
 
         logger.info(f"Saved configuration to: {tile_config_fn}")
+        
+        config = yaml.safe_load(config_str)
 
-        # Launch via stable CLI interface
-        subprocess.run(["fetchez", tile_config_fn], check=True)
-
+        if Pipeline is not None:
+            try:
+                pipeline = Pipeline(config)
+                pipeline.run()
+            except Exception:
+                subprocess.run(["fetchez", tile_config_fn], check=True)
+        else:
+            subprocess.run(["fetchez", tile_config_fn], check=True)
+        
         logger.info(f"--- FINISHED TILE: {tile_name} ---")
 
     except Exception as e:
