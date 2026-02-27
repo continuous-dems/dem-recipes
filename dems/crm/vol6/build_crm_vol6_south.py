@@ -5,7 +5,7 @@ import os
 import json
 import yaml
 import logging
-from fetchez.pipeline import Pipeline
+import subprocess
 from fetchez.spatial import Region
 
 import json
@@ -57,12 +57,8 @@ def build_tile(feature, template_str):
 
         logger.info(f"Saved configuration to: {tile_config_fn}")
 
-        config = yaml.safe_load(config_str)
-
-        # Launch the trebuchet!
-        # We pass the config dict directly!
-        pipeline = Pipeline(config)
-        pipeline.run()
+        # Launch via stable CLI interface
+        subprocess.run(["fetchez", tile_config_fn], check=True)
 
         logger.info(f"--- FINISHED TILE: {tile_name} ---")
 
