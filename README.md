@@ -13,10 +13,10 @@ fetchez recipes/socal_template.yaml
 Alternatively, you can load and launch recipes directly within a Python driver script using the `fetchez.pipeline` API:
 
 ```python
-from fetchez.pipeline import Pipeline
+from fetchez.recipe import Recipe
 
 # Load the engine with your recipe and launch
-Pipeline("recipes/socal_template.yaml").run()
+Recipe.from_file("recipes/socal_template.yaml").run()
 ```
 
 # 📖 Anatomy of a Recipe
