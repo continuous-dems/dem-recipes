@@ -63,7 +63,7 @@ def build_tile(feature, template_str):
 
         if Recipe is not None:
             try:
-                recipe = Recipe(config)
+                recipe = Recipe.from_file(config)
                 recipe.run()
             except Exception:
                 subprocess.run(["fetchez", tile_config_fn], check=True)
