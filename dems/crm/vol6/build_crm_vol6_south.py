@@ -8,7 +8,7 @@ import logging
 import subprocess
 from fetchez.spatial import Region
 try:
-    from fetchez.pipeline import Recipe
+    from fetchez.recipe import Recipe
 except ModuleNotFoundError:
     Recipe = None
 
@@ -20,6 +20,7 @@ OUTPUT_DIR = "./crm_vol6_output_tiles"
 # Setup Logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("SoCal_Builder")
+
 
 def build_tile(feature, template_str):
     """Builds a single CRM tile."""
