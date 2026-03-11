@@ -3,51 +3,62 @@ project:
   name: "CRM_Vol6_Tile_{name}"
   description: "1-arc-second CRM for Tile {name}"
 
+#domain:
 # The region will be injected build script.
 region: [{w}, {e}, {s}, {n}]
+# schema: "crm"
 
 modules:
   # Copernicus for land background
   - module: copernicus
-    args: 
+    args:
       weight: 1.25
+      datatype: 3
     hooks:
       - name: unzip
       - name: filename_filter
-        args: 
+        args:
           match: ".tif"
       - name: stream_data
-        args: 
+        args:
           chunk_size: 100000
       - name: range_z  # Only topo (copernicus bleeds 0 into bathymetry)
-        args: 
+        args:
           min_z: 0.01
 
   # GEBCO for background
   - module: gebco_cog
-    args: 
+    args:
       weight: .25
     hooks:
       #- *standard_ingest
       - name: stream_data
-        args: 
+        args:
           chunk_size: 100000
+      - name: stream_reproject
+        args:
+          src_srs: "EPSG:4326+9003"
+          dst_srs: "EPSG:4326+3855"
       - name: range_z  # Only Bathy
-        args: 
+        args:
           max_z: -0.1
 
   # NOAA Multibeam
-  - module: multibeam
-    args: 
+  - module: mbdb
+    args:
       weight: .75
     hooks:
       - name: filename_filter
-        args: 
+        args:
           exclude: ".inf"
           stage: "pre"
       - name: stream_data
-        args: 
+        args:
           chunk_size: 100000
+      - name: stream_reproject
+        args:
+          src_srs: "EPSG:4326+9003"
+          dst_srs: "EPSG:4326+3855"
       - name: rq
         args:
           reference: "gmrt"
@@ -59,78 +70,78 @@ modules:
 
   # NOS BAGs
   - module: nos_hydro
-    args: 
+    args:
       datatype: "bag"
       weight: 1
     hooks:
       - name: filename_filter
-        args: 
+        args:
           exclude: "_Ellipsoid_"
           stage: "pre"
       - name: stream_data
-        args: 
+        args:
           chunk_size: 100000
       - name: stream_reproject
-        args: 
+        args:
           dst_srs: "EPSG:4326+3855"
       - name: spatial_crop
 
   # NOS Hydro surveys
   - module: nos_hydro
-    args: 
+    args:
       datatype: "xyz"
       weight: .35
     hooks:
       - name: unzip
       - name: set_datatype
-        args: 
+        args:
           data_type: "nos_xyz"
       - name: stream_data
-        args: 
+        args:
           chunk_size: 100000
       - name: stream_reproject
-        args: 
+        args:
           src_srs: "EPSG:4326+5866"
           dst_srs: "EPSG:4326+3855"
       - name: spatial_crop
 
   # NOAA Electronic Nautical Charts
   - module: charts
-    args: 
+    args:
       weight: .15
     hooks:
       - name: unzip
       - name: filename_filter
-        args: 
+        args:
           match: ".000"
           stage: "file"
       - name: set_datatype
-        args: 
+        args:
           data_type: "charts_000"
       - name: stream_data
-        args: 
+        args:
           chunk_size: 100000
       - name: stream_reproject
-        args: 
+        args:
           src_srs: "EPSG:4326+5866"
           dst_srs: "EPSG:4326+3855"
       - name: spatial_crop
 
   # USACE E-Hydro dredging, etc.
   - module: ehydro
-    args: 
+    args:
       weight: .85
     hooks:
       - name: unzip
       - name: filename_filter
-        args: 
+        args:
           match: ".gdb"
           stage: "file"
       - name: stream_data
-        args: 
+        args:
           chunk_size: 100000
       - name: stream_reproject
-        args: 
+        args:
           dst_srs: "EPSG:4326+3855"
       - name: spatial_crop
 
@@ -141,14 +152,14 @@ modules:
       datasets: "3/4" # 3 and 4 are NED 1/3 and NED 1/9
       hooks:
         - name: stream_data
-          args: 
+          args:
             chunk_size: 100000
         - name: stream_reproject
-          args: 
+          args:
             dst_srs: "EPSG:4326+3855"
         - name: spatial_crop
         - name: range_z
-          args: 
+          args:
             min_z: 0.01
         - name: raster_flats
 
@@ -157,10 +168,10 @@ modules:
     args:
       hooks:
         - name: stream_data
-          args: 
+          args:
             chunk_size: 100000
         - name: stream_reproject
-          args: 
+          args:
             dst_srs: "EPSG:4326+3855"
         - name: spatial_crop
 
@@ -171,10 +182,10 @@ modules:
       max_year: "2025"
       hooks:
         - name: stream_data
-          args: 
+          args:
             chunk_size: 100000
         - name: stream_reproject
-          args: 
+          args:
             src_srs: "EPSG:4326+5866"
             dst_srs: "EPSG:4326+3855"
         - name: spatial_crop
@@ -230,20 +241,25 @@ global_hooks:
     args:
       target: "multi_stack"
 
+  # Reignite the pipeline using raster_stream
+  - name: raster_stream
+    args:
+      chunk_size: 2048,
+      stage: "post"
+
   - name: ms_blend
     args:
       weight_threshold: 1
 
   - name: ms_blend
     args:
-      weight_threshold: .5
+      weight_threshold: .3
 
-  # -------------------------------------------------------------------------
-  # GENERATE LANDMASK 
-  # -------------------------------------------------------------------------
-  - name: osm_landmask
+  # Writes the blended data to disk without breaking the stream
+  - name: raster_write
     args:
-      filename: "crm_vol6_{name}_landmask.geojson"
+      suffix: "_final_blend"
+      artifact_id: "blended_checkpoint"
 
   # -------------------------------------------------------------------------
   # CUDEM INTERPOLATION
@@ -252,10 +268,10 @@ global_hooks:
     args:
       steps: 2
       # CRM is 1s. We step down to 3s and 9s to fill holes.
-      resolutions: "1s/3s/9s" 
-      weights: "1.0/0.5/0.05"
-      algo: "interp_gmt"
-      barrier: "crm_vol6_{name}_landmask.geojson"
+      resolutions: "1s/3s/9s"
+      weights: "1.0/0.5/0.1"
+      algo: "raster_fill"
+      barrier: "coastline"
       output: "crm_vol6_{name}_crm.tif"
 
   # -------------------------------------------------------------------------
