@@ -97,7 +97,7 @@ global_hooks:
 # 🪝 Understanding Hooks and the Lifecycle
 Hooks are the specialized tools that process data. It is critical to understand when they run. `fetchez` processes hooks in three distinct stages:
 
-* **1. PRE Stage:** Runs before downloads begin.
+* **1. MANIFEST Stage:** (*pre*) Runs before downloads begin.
 
 *Use case*: Filtering the list of URLs, assigning stack weights (set_weight), or generating boundary masks (osm_landmask) before processing starts.
 
@@ -105,7 +105,7 @@ Hooks are the specialized tools that process data. It is critical to understand 
 
 *Use case*: Unzipping archives, converting formats, or streaming point clouds directly into a grid accumulator (multi_stack).
 
-* **3. POST Stage:** Runs after all files have been downloaded and streamed.
+* **3. COLLECTION Stage:** (*post*) Runs after all files have been downloaded and streamed.
 
 *Use case*: Spatial interpolation (sm_cudem), blending seams (sm_blend), and final output cropping.
 
@@ -140,4 +140,4 @@ Not sure what a hook does or what arguments it takes? Ask the CLI:
 
 * List all hooks: `fetchez --list-hooks`
 
-* Get specific hook documentation: `fetchez --hook-info sm_cudem`
+* Get specific hook documentation: `fetchez --hook-info ms_cudem`
