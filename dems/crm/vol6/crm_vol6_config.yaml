@@ -270,7 +270,7 @@ global_hooks:
       # CRM is 1s. We step down to 3s and 9s to fill holes.
       resolutions: "1s/3s/9s"
       weights: "1.0/0.5/0.1"
-      algo: "raster_fill"
+      algo: "interp_gmt"
       barrier: "coastline"
       output: "crm_vol6_{name}_crm.tif"
 
