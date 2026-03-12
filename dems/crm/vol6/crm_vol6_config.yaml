@@ -61,11 +61,11 @@ modules:
           dst_srs: "EPSG:4326+3855"
       - name: rq
         args:
-          reference: "gmrt"
+          reference: "gebco_cog"
           threshold: 10
           mode: "percent"
           builder: "grid"
-          res: 0.008333
+          res: 0.000277777
       - name: outlierz
 
   # NOS BAGs
