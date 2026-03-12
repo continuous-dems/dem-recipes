@@ -47,11 +47,8 @@ modules:
   - module: mbdb
     args:
       weight: .75
+      want_inf: False
     hooks:
-      - name: filename_filter
-        args:
-          exclude: ".inf"
-          stage: "pre"
       - name: stream_data
         args:
           chunk_size: 100000
@@ -245,7 +242,7 @@ global_hooks:
   - name: raster_stream
     args:
       chunk_size: 2048,
-      stage: "post"
+      stage: "collection"
 
   - name: ms_blend
     args:
@@ -260,6 +257,9 @@ global_hooks:
     args:
       suffix: "_final_blend"
       artifact_id: "blended_checkpoint"
+
+  - name: focus_sink
+    args: {target: "blended_checkpoint"}
 
   # -------------------------------------------------------------------------
   # CUDEM INTERPOLATION
