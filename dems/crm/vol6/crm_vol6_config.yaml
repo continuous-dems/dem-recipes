@@ -5,7 +5,7 @@ project:
 
 #domain:
 # The region will be injected build script.
-region: [{w}, {e}, {s}, {n}]
+# region: None
 # schema: "crm"
 
 modules:
@@ -259,7 +259,8 @@ global_hooks:
       artifact_id: "blended_checkpoint"
 
   - name: focus_sink
-    args: {target: "blended_checkpoint"}
+    args:
+      target: "blended_checkpoint"
 
   # -------------------------------------------------------------------------
   # CUDEM INTERPOLATION
@@ -273,6 +274,10 @@ global_hooks:
       algo: "interp_gmt"
       barrier: "coastline"
       output: "crm_vol6_{name}_crm.tif"
+
+  - name: viz_geoshade
+    args:
+      stage: "collection"
 
   # -------------------------------------------------------------------------
   # CLEANUP/METADATA/ETC.

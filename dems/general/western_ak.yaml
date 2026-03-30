@@ -1,6 +1,18 @@
 project:
   name: "Western_AK_Test"
-  description: "Test DEM for western Alaska"
+  description: >
+    This run executes the shared Western Alaska recipe. It gathers elevation
+    and bathymetry inputs for the area, including Copernicus, MBDB, NOAA hydro
+    (BAG/XYZ), chart soundings, and eHydro. Source data is filtered, unzipped,
+    spatially cropped, and reprojected to EPSG:4326+3855.
+    The inputs are combined into a weighted raster stack (test_ak_stack.tif)
+    at approximately 1 arc-second resolution. This stack is blended in two
+    passes to smooth overlaps, and then a CUDEM-style step-down interpolation
+    is applied at 1s / 3s / 9s scales using the coastline as a barrier to
+    generate the final seamless terrain surface (western_alaska_dem.tif).
+
+execution:
+  threads: 4
 
 # schema: crm
 region: [-166.0, -162.5, 62.0, 63.5]
@@ -20,18 +32,29 @@ modules:
       - name: range_z
         args: {min_z: 0.01}
 
-  # Bathymetry
-  - module: gebco_cog
-    args: {weight: 0.01}
+  - module: copernicus
+    args: {weight: .75, datatype: 1}
     hooks:
-      - name: raster_clip
-        args:
-          barrier: "coastline"
-          invert: True
+      - name: unzip
+      - name: filename_filter
+        args: {match: ".tif"}
       - name: stream_data
         args: {chunk_size: 100000}
       - name: range_z
-        args: {max_z: -0.1}
+        args: {min_z: 0.01}
+
+  # Bathymetry
+  # - module: gebco_cog
+  #   args: {weight: 0.01}
+  #   hooks:
+  #     - name: raster_clip
+  #       args:
+  #         barrier: "coastline"
+  #         invert: True
+  #     - name: stream_data
+  #       args: {chunk_size: 100000}
+  #     - name: range_z
+  #       args: {max_z: -0.1}
 
   - module: mbdb
     args: {weight: 0.75, want_inf: False}
