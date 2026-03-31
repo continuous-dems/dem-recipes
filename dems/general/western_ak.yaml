@@ -131,6 +131,17 @@ global_hooks:
   - name: audit
   - name: drop_class
 
+- name: source_masks
+    args:
+      res: 0.0002777777777777778  # Match your stack resolution!
+      output_dir: "ak_debug_masks"
+      vrt_name: "western_ak_sources.vrt"
+
+  - name: provenance
+    args:
+      res: "1s"
+      output: "western_ak_provenance.tif"
+
   # Build the Multi-Band Stack
   - name: multi_stack
     args:
